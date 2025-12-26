@@ -14,6 +14,7 @@ export default defineSchema({
     mediaType: v.string(), // "movie" | "tv"
     limit: v.optional(v.number()), // Max movies to swipe
     mode: v.optional(v.string()), // "first" | "all"
+    randomSeed: v.number(),
   }).index("by_code", ["code"]),
 
   users: defineTable({

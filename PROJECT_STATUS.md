@@ -47,7 +47,12 @@ To make this a complete, shippable product, we need to focus on:
     -   ✅ Added "Super Like" feature.
     -   ✅ Added Room Config options (Deck Size, Game Mode).
     -   ✅ Added "Full Deck" mode with Results Screen.
-    -   ✅ Added Room Cleanup (auto-delete empty rooms).
+    -   ✅ **Room Persistence**: Users can navigate away and rejoin the same session.
+    -   ✅ **Quick Resume**: "Resume Room" button on Home screen for active sessions.
+    -   ✅ **Explicit Leave**: Added "Leave Room" button with proper cleanup logic.
+    -   ✅ **Shared Movie Deck**: Implemented deterministic shuffle so all users see the same movies.
+    -   ✅ **Deck Limit Fix**: Fixed restart bug by syncing limit check with database history.
+    -   ✅ **Cleanup Consistency**: Ensured "First Match" mode properly cleans up room data on exit.
 4.  **Polishing**:
     -   Add transitions between screens.
     -   Add haptic feedback on swipes.

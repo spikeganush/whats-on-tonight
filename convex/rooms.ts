@@ -28,6 +28,7 @@ export const create = mutation({
       providerIds: args.providerIds,
       limit: args.limit,
       mode: args.mode,
+      randomSeed: Math.random(),
     });
 
     // Add creator as first user
@@ -121,8 +122,16 @@ export const join = mutation({
             throw new Error("Room not found");
         }
 
-        // Check if user already joined? 
-        // For now just insert (allows rejoin if same session ID logic added later)
+        // Check if user already joined
+        const existingUser = await ctx.db.query("users")
+            .withIndex("by_room", (q) => q.eq("roomId", room._id))
+            .filter((q) => q.eq(q.field("sessionId"), args.sessionId))
+            .first();
+
+        if (existingUser) {
+            return { roomId: room._id, userId: existingUser._id };
+        }
+
         const userId = await ctx.db.insert("users", {
             roomId: room._id,
             sessionId: args.sessionId,

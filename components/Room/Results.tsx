@@ -6,6 +6,7 @@ import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'rea
 import { api } from '../../convex/_generated/api';
 import { Id } from '../../convex/_generated/dataModel';
 import { getMovieDetails } from '../../services/tmdb/config';
+import { clearActiveRoom } from '../../utils/session';
 
 export default function Results({ roomId }: { roomId: Id<"rooms"> }) {
     const matches = useQuery(api.rooms.getMatches, { roomId });
@@ -39,6 +40,7 @@ export default function Results({ roomId }: { roomId: Id<"rooms"> }) {
         } catch (e) {
             console.error("Failed to clean up:", e);
         } finally {
+            await clearActiveRoom();
             router.replace('/');
         }
     };

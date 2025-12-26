@@ -7,9 +7,10 @@ interface WaitingRoomProps {
     users: Doc<"users">[];
     isCreator: boolean;
     onStartGame: () => void;
+    onLeave: () => void;
 }
 
-export default function WaitingRoom({ room, users, isCreator, onStartGame }: WaitingRoomProps) {
+export default function WaitingRoom({ room, users, isCreator, onStartGame, onLeave }: WaitingRoomProps) {
     const handleShare = async () => {
         await Share.share({
             message: `Join my movie night! Room Code: ${room.code}`,
@@ -44,6 +45,13 @@ export default function WaitingRoom({ room, users, isCreator, onStartGame }: Wai
                     onPress={handleShare}
                 >
                     <Text className="text-white font-semibold">Share Code</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                    className="bg-red-500/20 p-4 rounded-xl items-center border border-red-500/50"
+                    onPress={onLeave}
+                >
+                    <Text className="text-red-400 font-semibold">Leave Room</Text>
                 </TouchableOpacity>
 
                 {isCreator && (

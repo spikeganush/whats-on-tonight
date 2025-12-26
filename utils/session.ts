@@ -21,3 +21,17 @@ export const getUserName = async (): Promise<string> => {
 export const saveUserName = async (name: string) => {
   await AsyncStorage.setItem(USER_NAME_KEY, name);
 };
+
+const ACTIVE_ROOM_KEY = 'active_room_id';
+
+export const getActiveRoom = async (): Promise<string | null> => {
+  return await AsyncStorage.getItem(ACTIVE_ROOM_KEY);
+};
+
+export const saveActiveRoom = async (roomId: string) => {
+  await AsyncStorage.setItem(ACTIVE_ROOM_KEY, roomId);
+};
+
+export const clearActiveRoom = async () => {
+  await AsyncStorage.removeItem(ACTIVE_ROOM_KEY);
+};

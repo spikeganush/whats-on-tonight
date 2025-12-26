@@ -1,5 +1,10 @@
-import { Stack, router } from 'expo-router';
+import { useQuery } from 'convex/react';
+import { Stack, router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+import { api } from '../convex/_generated/api';
+import { Id } from '../convex/_generated/dataModel';
+import { getActiveRoom } from '../utils/session';
 
 export default function Home() {
   const handleCreateRoom = () => {
@@ -9,6 +14,22 @@ export default function Home() {
 
   const handleJoinRoom = () => {
     router.push("/room/join");
+  };
+
+  const [lastRoomId, setLastRoomId] = useState<string | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      getActiveRoom().then(setLastRoomId);
+    }, [])
+  );
+
+  const activeRoom = useQuery(api.rooms.get, 
+    lastRoomId ? { roomId: lastRoomId as Id<"rooms"> } : "skip"
+  );
+
+  const handleRejoin = () => {
+      if (lastRoomId) router.push(`/room/${lastRoomId}`);
   };
 
   return (
@@ -31,6 +52,15 @@ export default function Home() {
         >
           <Text className="text-white font-semibold text-xl">Create Room</Text>
         </TouchableOpacity>
+
+        {lastRoomId && activeRoom && (
+            <TouchableOpacity 
+                className="bg-green-600 p-4 rounded-xl items-center active:bg-green-700"
+                onPress={handleRejoin}
+            >
+            <Text className="text-white font-semibold text-xl">Resume Room {activeRoom.code}</Text>
+            </TouchableOpacity>
+        )}
 
         <TouchableOpacity 
           className="bg-slate-700 p-4 rounded-xl items-center active:bg-slate-800"

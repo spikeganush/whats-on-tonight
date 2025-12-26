@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from 'convex/react';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import CardStack from '../../components/Room/CardStack';
@@ -10,7 +10,8 @@ import { api } from '../../convex/_generated/api';
 import { Id } from '../../convex/_generated/dataModel';
 import { discoverMovies } from '../../services/tmdb/config';
 import { Movie } from '../../types/tmdb';
-import { getSessionId } from '../../utils/session';
+import { shuffleArray } from '../../utils/random';
+import { clearActiveRoom, getSessionId, saveActiveRoom } from '../../utils/session';
 
 export default function RoomSwipeScreen() {
   const { id } = useLocalSearchParams();
@@ -20,9 +21,14 @@ export default function RoomSwipeScreen() {
   const users = useQuery(api.rooms.listUsers, { roomId });
   const startGame = useMutation(api.rooms.startGame);
   const submitSwipe = useMutation(api.swipes.submit);
+  const leaveRoom = useMutation(api.rooms.leave);
+  const router = useRouter();
 
   const [sessionId, setSessionId] = useState<string | null>(null);
-  useEffect(() => { getSessionId().then(setSessionId); }, []);
+  useEffect(() => { 
+      getSessionId().then(setSessionId); 
+      if (roomId) saveActiveRoom(roomId);
+  }, [roomId]);
 
   // Persistence: Fetch user's previous swipes
   const userSwipes = useQuery(api.rooms.getUserSwipes, 
@@ -35,67 +41,73 @@ export default function RoomSwipeScreen() {
   const [finishedStack, setFinishedStack] = useState(false);
   const [swipesCount, setSwipesCount] = useState(0);
 
-  // Fetch movies logic
+  // Initialize swipes count from history
   useEffect(() => {
-    async function fetchMovies() {
-      if (!room || !room.tmdbGenreIds || userSwipes === undefined) return;
-      if (room.limit && swipesCount >= room.limit) {
+      if (userSwipes) {
+          setSwipesCount(userSwipes.length);
+      }
+  }, [userSwipes]);
+
+
+  // Deterministic Fetch Logic
+  useEffect(() => {
+    async function fetchDeterministicDeck() {
+      // Wait for room, swipes, and check if we already have movies
+      if (!room || !room.tmdbGenreIds || userSwipes === undefined || finishedStack) return;
+      if (movies.length > 0) return; // Don't re-fetch if we have a stack (unless empty)
+
+      if (room.limit && userSwipes.length >= room.limit) {
           setFinishedStack(true);
           return;
       }
 
       try {
         setLoading(true);
-        const genresString = room.tmdbGenreIds ? room.tmdbGenreIds.join(',') : undefined;
+        const genresString = room.tmdbGenreIds.join(',');
         const providersString = room.providerIds ? room.providerIds.join('|') : undefined;
         const region = room.tmdbRegion || 'US'; 
         
-        let currentMovies: Movie[] = [];
-        let currentPage = page;
+        // 1. Fetch a "Base Deck" of 3 pages (60 movies) efficiently
+        // We fetch parallel to be fast
+        const pagesToFetch = [1, 2, 3];
+        const promises = pagesToFetch.map(p => 
+            discoverMovies(p, genresString, region, providersString)
+        );
         
-        // Keep fetching pages until we have enough unseen movies or hit a limit
-        while (currentMovies.length < 5 && currentPage < 10) {
-            const results = await discoverMovies(currentPage, genresString, region, providersString);
-            
-            // Filter out seen movies
-            const unseen = results.filter(m => !userSwipes.includes(m.id));
-            currentMovies = [...currentMovies, ...unseen];
-            
-            if (currentMovies.length < 5) {
-                currentPage++;
-            } else {
-                break;
-            }
-        }
-        
-        // If we advanced pages, update state for next time
-        if (currentPage > page) setPage(currentPage + 1);
+        const results = await Promise.all(promises);
+        const allMovies = results.flat();
 
-        if (currentMovies.length === 0) {
+        // 2. Deterministic Shuffle
+        // Use room.randomSeed (or createdAt as fallback) to seed the shuffle
+        // randomSeed is 0..1, multiply to get an integer
+        const seed = room.randomSeed ? Math.floor(room.randomSeed * 1000000) : room.createdAt;
+        const shuffledDeck = shuffleArray(allMovies, seed);
+
+        // 3. Filter out seen movies
+        const unseenMovies = shuffledDeck.filter(m => !userSwipes.includes(m.id));
+
+        if (unseenMovies.length === 0) {
             setFinishedStack(true);
         } else {
-            setMovies(currentMovies);
+            setMovies(unseenMovies);
         }
       } catch (error) {
-        console.error(error);
+        console.error("Failed to fetch deck:", error);
       } finally {
         setLoading(false);
       }
     }
 
-    // Only fetch if we have room, swipes loaded, and empty local stack (and haven't finished)
-    if (room && userSwipes && movies.length === 0 && !finishedStack) {
-        fetchMovies();
-    }
-  }, [room, userSwipes, movies.length, finishedStack]);
+    fetchDeterministicDeck();
+  }, [room, userSwipes, finishedStack]); // Removed movies.length dependency to avoid infinite loops, added check inside
+
 
   const handleStartGame = async () => {
     await startGame({ roomId });
   };
 
   const handleSwipe = async (movie: Movie, direction: "left" | "right" | "super") => {
-    console.log(`${direction.toUpperCase()}:`, movie.title);
-    if (!sessionId) return;
+   if (!sessionId) return;
     
     // Submit to backend
     submitSwipe({ roomId, movieId: movie.id, direction, sessionId });
@@ -109,6 +121,17 @@ export default function RoomSwipeScreen() {
         setFinishedStack(true);
     }
  };
+
+  const handleLeaveRoom = async () => {
+    if (!sessionId) return;
+    try {
+        await leaveRoom({ roomId, sessionId });
+        await clearActiveRoom();
+        router.replace('/');
+    } catch (e) {
+        console.error("Failed to leave room:", e);
+    }
+  };
 
   if (!room || !users) {
     return (
@@ -130,6 +153,7 @@ export default function RoomSwipeScreen() {
                 users={users} 
                 isCreator={isCreator} 
                 onStartGame={handleStartGame} 
+                onLeave={handleLeaveRoom}
             />
         </>
     )

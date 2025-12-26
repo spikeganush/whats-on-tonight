@@ -1,4 +1,4 @@
-import { useQuery } from 'convex/react';
+import { useMutation, useQuery } from 'convex/react';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -7,11 +7,18 @@ import { api } from '../../convex/_generated/api';
 import { Id } from '../../convex/_generated/dataModel';
 import { getMovieDetails } from '../../services/tmdb/config';
 import { Movie } from '../../types/tmdb';
+import { clearActiveRoom } from '../../utils/session';
 
 export default function MatchFound({ roomId }: { roomId: Id<"rooms"> }) {
     const router = useRouter();
     const match = useQuery(api.rooms.getMatch, { roomId });
+    const leaveRoom = useMutation(api.rooms.leave);
     const [movie, setMovie] = useState<Movie | null>(null);
+    const [sessionId, setSessionId] = useState<string | null>(null);
+
+    useEffect(() => {
+        import('../../utils/session').then(mod => mod.getSessionId().then(setSessionId));
+    }, []);
 
     useEffect(() => {
         async function fetchMovie() {
@@ -27,7 +34,15 @@ export default function MatchFound({ roomId }: { roomId: Id<"rooms"> }) {
         fetchMovie();
     }, [match]);
 
-    const handleHome = () => {
+    const handleHome = async () => {
+        if (sessionId) {
+            try {
+                await leaveRoom({ roomId, sessionId });
+            } catch (e) {
+                console.error("Failed to leave room", e);
+            }
+        }
+        await clearActiveRoom();
         router.dismissAll();
         router.replace("/");
     };
