@@ -3,7 +3,6 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../../convex/_generated/api';
 import { Id } from '../../convex/_generated/dataModel';
 import { getMovieDetails } from '../../services/tmdb/config';
@@ -58,7 +57,7 @@ export default function Results({ roomId }: { roomId: Id<"rooms"> }) {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-slate-900">
+        <View className="flex-1 bg-slate-900">
             <Text className="text-green-400 text-3xl font-bold text-center mb-2">What's on tonight?</Text>
             <Text className="text-slate-400 text-center mb-6">Here is {movies.length > 0 ? "your watchlist" : "what we found"}:</Text>
             
@@ -103,6 +102,6 @@ export default function Results({ roomId }: { roomId: Id<"rooms"> }) {
                     <Text className="text-white font-bold text-lg">Back to Home</Text>
                 </TouchableOpacity>
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }
