@@ -8,32 +8,42 @@ interface ProviderAttributionProps {
     region: string;
     selectedProviderIds?: number[];
     variant?: 'overlay' | 'inline';
+    showAll?: boolean;
 }
 
-export default function ProviderAttribution({ movieId, region, selectedProviderIds, variant = 'overlay' }: ProviderAttributionProps) {
+export default function ProviderAttribution({ movieId, region, selectedProviderIds, variant = 'overlay', showAll = false }: ProviderAttributionProps) {
     const [logos, setLogos] = useState<string[]>([]);
     
     useEffect(() => {
+        let mounted = true;
+
         async function fetch() {
             try {
-                if (!selectedProviderIds || selectedProviderIds.length === 0) return;
+                // If filtering is requested but no IDs provided, and not showing all, return.
+                if ((!selectedProviderIds || selectedProviderIds.length === 0) && !showAll) return;
 
                 const results = await getMovieWatchProviders(movieId);
+                if (!mounted) return;
+
                 const regionData = results[region];
                 
                 if (regionData && regionData.flatrate) {
-                    const matching = regionData.flatrate
-                        .filter((p: any) => selectedProviderIds.includes(p.provider_id))
-                        .map((p: any) => p.logo_path);
+                    let finalProviders = regionData.flatrate;
+
+                    if (!showAll && selectedProviderIds) {
+                        finalProviders = finalProviders.filter((p: any) => selectedProviderIds.includes(p.provider_id));
+                    }
                     
-                    setLogos(matching);
+                    setLogos(finalProviders.map((p: any) => p.logo_path));
                 }
             } catch (e) {
                 // Silent fail
             }
         }
         fetch();
-    }, [movieId, region]);
+
+        return () => { mounted = false; };
+    }, [movieId, region, selectedProviderIds, showAll]);
 
     if (logos.length === 0) return null;
 

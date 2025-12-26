@@ -1,5 +1,7 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React from 'react';
-import { Dimensions, Image, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   interpolate,
@@ -25,11 +27,23 @@ interface SwipeCardProps {
 }
 
 export default function SwipeCard({ movie, onSwipeRight, onSwipeLeft, onSwipeSuper, index, providerIds, region }: SwipeCardProps & { onSwipeSuper: () => void }) {
+  const router = useRouter();
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   
   // Only top card is interactive
   const isTopCard = index === 0;
+
+  const handleInfoPress = () => {
+    router.push({
+      pathname: "/movie/[id]",
+      params: { 
+          id: movie.id,
+          region: region,
+          providerIds: providerIds ? JSON.stringify(providerIds) : undefined 
+      }
+    });
+  };
 
   const panGesture = Gesture.Pan()
     .enabled(isTopCard)
@@ -111,7 +125,12 @@ export default function SwipeCard({ movie, onSwipeRight, onSwipeLeft, onSwipeSup
           resizeMode="cover"
         />
         <View className="absolute bottom-0 w-full bg-black/60 p-6 pt-12">
-          <Text className="text-white text-3xl font-bold">{movie.title}</Text>
+            <View className="flex-row items-center justify-between mb-2">
+                <Text className="text-white text-3xl font-bold flex-1 mr-2">{movie.title}</Text>
+                <TouchableOpacity onPress={handleInfoPress} hitSlop={10}>
+                    <Ionicons name="information-circle-outline" size={32} color="white" />
+                </TouchableOpacity>
+            </View>
           <Text className="text-slate-300 text-lg line-clamp-3">{movie.overview}</Text>
         </View>
 

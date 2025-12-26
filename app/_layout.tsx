@@ -26,6 +26,7 @@ export default function RootLayout() {
           <Stack>
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="room/config" options={{ title: 'Room Setup', presentation: 'modal' }} />
+            <Stack.Screen name="movie/[id]" options={{ presentation: 'modal', headerShown: false }} />
           </Stack>
           <StatusBar style="light" />
         </ThemeProvider>

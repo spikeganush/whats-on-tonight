@@ -38,6 +38,9 @@ The app is **functional**.
 To make this a complete, shippable product, we need to focus on:
 
 1.  **Match UI Experience**: 
+    -   ✅ **Detail Page**: Implemented Movie Detail page with Trailer support, accessible via Info button on cards.
+    -   ✅ **Content**: Added Genre tags and Provider availability (inline) to detail page.
+    -   ✅ **Provider Logic**: Enhanced logic to safely display providers on detail page, showing all available options in the region.
     -   Currently, when a match is found, we just show simple text ("It's a Match!").
     -   *Needed*: A beautiful "Match Found" modal/screen showing the movie details and where to watch it. (Work in progress: Results Screen for Full Deck mode)
 2.  **Error Handling & Edge Cases**:

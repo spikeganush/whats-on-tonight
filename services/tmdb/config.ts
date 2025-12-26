@@ -115,3 +115,8 @@ export const getMovieWatchProviders = async (id: number): Promise<any> => {
     const data = await tmdbFetch(`/movie/${id}/watch/providers`);
     return data.results;
 };
+
+export const getMovieWithVideos = async (id: number): Promise<any> => {
+    const data = await tmdbFetch(`/movie/${id}?append_to_response=videos,release_dates`);
+    return data;
+};
