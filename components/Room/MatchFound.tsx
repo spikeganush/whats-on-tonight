@@ -10,6 +10,8 @@ import { Movie } from '../../types/tmdb';
 import { clearActiveRoom } from '../../utils/session';
 import ProviderAttribution from '../ProviderAttribution';
 
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 export default function MatchFound({ roomId }: { roomId: Id<"rooms"> }) {
     const router = useRouter();
     const match = useQuery(api.rooms.getMatch, { roomId });
@@ -82,7 +84,7 @@ export default function MatchFound({ roomId }: { roomId: Id<"rooms"> }) {
     }
 
     return (
-        <View className="flex-1 bg-slate-900 items-center justify-center p-6 w-full">
+        <SafeAreaView className="flex-1 bg-slate-900 items-center justify-center p-6 w-full">
             
             <Text className="text-green-500 font-bold text-4xl mb-8">It's a Match!</Text>
             
@@ -118,6 +120,6 @@ export default function MatchFound({ roomId }: { roomId: Id<"rooms"> }) {
             >
                 <Text className="text-white font-bold text-xl">Find Another Movie</Text>
             </TouchableOpacity>
-        </View>
+        </SafeAreaView>
     );
 }

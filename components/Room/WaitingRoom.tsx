@@ -1,5 +1,6 @@
 import React from 'react';
 import { FlatList, Share, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Doc } from '../../convex/_generated/dataModel';
 
 interface WaitingRoomProps {
@@ -18,7 +19,7 @@ export default function WaitingRoom({ room, users, isCreator, onStartGame, onLea
     };
 
     return (
-        <View className="flex-1 bg-slate-900 p-6 w-full">
+        <SafeAreaView className="flex-1 bg-slate-900 p-6 w-full">
             <View className="mt-12 mb-8 items-center">
                 <Text className="text-white text-4xl font-bold mb-2">{room.code}</Text>
                 <Text className="text-slate-400">Room Code</Text>
@@ -66,6 +67,6 @@ export default function WaitingRoom({ room, users, isCreator, onStartGame, onLea
                         <Text className="text-slate-400 text-center p-4">Waiting for host to start...</Text>
                 )}
             </View>
-        </View>
+        </SafeAreaView>
     );
 }

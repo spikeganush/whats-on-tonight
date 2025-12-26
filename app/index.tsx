@@ -2,6 +2,7 @@ import { useQuery } from 'convex/react';
 import { Stack, router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../convex/_generated/api';
 import { Id } from '../convex/_generated/dataModel';
 import { getActiveRoom } from '../utils/session';
@@ -33,7 +34,7 @@ export default function Home() {
   };
 
   return (
-    <View className="flex-1 bg-slate-900 items-center justify-center p-6">
+    <SafeAreaView className="flex-1 bg-slate-900 items-center justify-center p-6">
       <Stack.Screen options={{ headerShown: false }} />
       
       <View className="mb-12">
@@ -69,6 +70,6 @@ export default function Home() {
           <Text className="text-white font-semibold text-xl">Join Room</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }

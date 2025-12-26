@@ -13,6 +13,8 @@ import { Movie } from '../../types/tmdb';
 import { shuffleArray } from '../../utils/random';
 import { clearActiveRoom, getSessionId, saveActiveRoom } from '../../utils/session';
 
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 export default function RoomSwipeScreen() {
   const { id } = useLocalSearchParams();
   const roomId = id as Id<"rooms">;
@@ -181,7 +183,7 @@ export default function RoomSwipeScreen() {
 
   // Active (Swiping)
   return (
-    <View className="flex-1 bg-slate-900">
+    <SafeAreaView className="flex-1 bg-slate-900">
       <Stack.Screen options={{ headerShown: false }} />
       <CardStack 
         movies={movies} 
@@ -191,6 +193,6 @@ export default function RoomSwipeScreen() {
         providerIds={room.providerIds}
         region={room.tmdbRegion}
       />
-    </View>
+    </SafeAreaView>
   );
 }
