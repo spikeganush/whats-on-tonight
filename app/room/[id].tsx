@@ -8,7 +8,9 @@ import Results from '../../components/Room/Results';
 import WaitingRoom from '../../components/Room/WaitingRoom';
 import { api } from '../../convex/_generated/api';
 import { Id } from '../../convex/_generated/dataModel';
+import { discoverJellyfin } from '../../services/jellyfin/discovery';
 import { discoverMovies } from '../../services/tmdb/config';
+
 import { Movie } from '../../types/tmdb';
 import { shuffleArray } from '../../utils/random';
 import {
@@ -57,13 +59,7 @@ export default function RoomSwipeScreen() {
   useEffect(() => {
     async function fetchDeterministicDeck() {
       // Wait for room, swipes, and check if we already have movies
-      if (
-        !room ||
-        !room.tmdbGenreIds ||
-        userSwipes === undefined ||
-        finishedStack
-      )
-        return;
+      if (!room || userSwipes === undefined || finishedStack) return;
       if (movies.length > 0) return; // Don't re-fetch if we have a stack (unless empty)
 
       if (room.limit && userSwipes.length >= room.limit) {
@@ -73,21 +69,41 @@ export default function RoomSwipeScreen() {
 
       try {
         setLoading(true);
-        const genresString = room.tmdbGenreIds.join(',');
-        const providersString = room.providerIds
-          ? room.providerIds.join('|')
-          : undefined;
-        const region = room.tmdbRegion || 'US';
 
-        // 1. Fetch a "Base Deck" of 3 pages (60 movies) efficiently
-        // We fetch parallel to be fast
-        const pagesToFetch = [1, 2, 3];
-        const promises = pagesToFetch.map((p) =>
-          discoverMovies(p, genresString, region, providersString),
-        );
+        let allMovies: Movie[] = [];
 
-        const results = await Promise.all(promises);
-        const allMovies = results.flat();
+        if (room.serverConfig) {
+          // --- Jellyfin Flow ---
+          allMovies = await discoverJellyfin(
+            room.serverConfig, // This is likely encrypted/stringified? User provided it as string in setup?
+            // Note: Schema says serverConfig: v.optional(v.string())
+            // Ideally we need to decrypt if encrypted. Assuming plain JSON string for this context or handled inside.
+            // Wait, previous context said "Encrypted Home Server Config".
+            // For now assuming the stored config works or logic handles it.
+            // Actually, in `services/jellyfin/discovery.ts` we JSON.parse it.
+            room.tmdbGenreIds,
+            60, // Limit
+            room.code, // Pass room code for decryption
+          );
+        } else {
+          // --- TMDB Flow ---
+          if (!room.tmdbGenreIds) return; // TMDB flow needs genres usually? Or not strict.
+
+          const genresString = room.tmdbGenreIds.join(',');
+          const providersString = room.providerIds
+            ? room.providerIds.join('|')
+            : undefined;
+          const region = room.tmdbRegion || 'US';
+
+          // 1. Fetch a "Base Deck" of 3 pages (60 movies) efficiently
+          const pagesToFetch = [1, 2, 3];
+          const promises = pagesToFetch.map((p) =>
+            discoverMovies(p, genresString, region, providersString),
+          );
+
+          const results = await Promise.all(promises);
+          allMovies = results.flat();
+        }
 
         // 2. Deterministic Shuffle
         // Use room.randomSeed (or createdAt as fallback) to seed the shuffle

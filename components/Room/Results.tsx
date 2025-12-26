@@ -12,6 +12,7 @@ import {
 import { api } from '../../convex/_generated/api';
 import { Id } from '../../convex/_generated/dataModel';
 import { getMovieDetails } from '../../services/tmdb/config';
+import { getImageUrl } from '../../utils/image';
 import { clearActiveRoom } from '../../utils/session';
 import ProviderAttribution from '../ProviderAttribution';
 
@@ -25,10 +26,20 @@ export default function Results({ roomId }: { roomId: Id<'rooms'> }) {
   useEffect(() => {
     async function fetchDetails() {
       if (!matches) return;
-      const details = await Promise.all(
-        matches.map((m) => getMovieDetails(m.movieId)),
-      );
-      setMovies(details);
+
+      const promises = matches.map(async (m) => {
+        try {
+          return await getMovieDetails(m.movieId);
+        } catch (e) {
+          console.error(`Failed to fetch details for movie ${m.movieId}`, e);
+          return null;
+        }
+      });
+
+      const results = await Promise.all(promises);
+      const validMovies = results.filter((m) => m !== null);
+
+      setMovies(validMovies);
       setLoading(false);
     }
     if (matches) {
@@ -95,7 +106,7 @@ export default function Results({ roomId }: { roomId: Id<'rooms'> }) {
           >
             <Image
               source={{
-                uri: `https://image.tmdb.org/t/p/w200${movie.poster_path}`,
+                uri: getImageUrl(movie.poster_path, 'w200'),
               }}
               style={{ width: 80, height: 120, borderRadius: 8 }}
               contentFit="cover"

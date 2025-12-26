@@ -18,6 +18,8 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { Movie } from '../types/tmdb';
+import { getImageUrl } from '../utils/image';
+
 import ProviderAttribution from './ProviderAttribution';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -126,7 +128,8 @@ export default function SwipeCard({
     opacity: interpolate(translateY.value, [0, -100], [0, 1]),
   }));
 
-  const imageUrl = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+  // Inside component ...
+  const imageUrl = getImageUrl(movie.poster_path, 'w500');
 
   if (index > 2) return null;
 
@@ -141,6 +144,7 @@ export default function SwipeCard({
           style={styles.image}
           resizeMode="cover"
         />
+
         <View className="absolute bottom-0 w-full bg-black/60 p-6 pt-12">
           <View className="flex-row items-center justify-between mb-2">
             <Text className="text-white text-3xl font-bold flex-1 mr-2">

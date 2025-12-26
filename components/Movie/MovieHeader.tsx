@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { ExtendedMovie } from '../../types/tmdb';
+import { getImageUrl } from '../../utils/image';
 
 interface MovieHeaderProps {
   movie: ExtendedMovie;
@@ -16,7 +17,7 @@ export default function MovieHeader({ movie }: MovieHeaderProps) {
     <View className="relative w-full h-96">
       <Image
         source={{
-          uri: `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`,
+          uri: getImageUrl(movie.backdrop_path, 'w1280'),
         }}
         style={{ width: '100%', height: '100%' }}
         contentFit="cover"
@@ -37,7 +38,7 @@ export default function MovieHeader({ movie }: MovieHeaderProps) {
         <View className="flex-row items-end gap-4">
           <Image
             source={{
-              uri: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
+              uri: getImageUrl(movie.poster_path, 'w500'),
             }}
             style={{ width: 100, height: 150, borderRadius: 12 }}
             contentFit="cover"
