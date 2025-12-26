@@ -35,3 +35,43 @@ export const saveActiveRoom = async (roomId: string) => {
 export const clearActiveRoom = async () => {
   await AsyncStorage.removeItem(ACTIVE_ROOM_KEY);
 };
+
+const USER_COUNTRY_KEY = 'user_country';
+
+export const getSavedCountry = async (): Promise<string | null> => {
+  return await AsyncStorage.getItem(USER_COUNTRY_KEY);
+};
+
+export const saveCountry = async (countryCode: string) => {
+  await AsyncStorage.setItem(USER_COUNTRY_KEY, countryCode);
+};
+
+const USER_PLATFORMS_KEY = 'user_platforms';
+
+export const getSavedPlatforms = async (): Promise<number[]> => {
+  const json = await AsyncStorage.getItem(USER_PLATFORMS_KEY);
+  return json ? JSON.parse(json) : [];
+};
+
+export const savePlatforms = async (platformIds: number[]) => {
+  await AsyncStorage.setItem(USER_PLATFORMS_KEY, JSON.stringify(platformIds));
+};
+
+export interface HomeServerConfig {
+  type: 'jellyfin' | 'plex';
+  url: string;
+  apiKey: string;
+  enabled: boolean;
+}
+
+const HOME_SERVER_KEY = 'home_server_config';
+
+export const getHomeServerConfig =
+  async (): Promise<HomeServerConfig | null> => {
+    const json = await AsyncStorage.getItem(HOME_SERVER_KEY);
+    return json ? JSON.parse(json) : null;
+  };
+
+export const saveHomeServerConfig = async (config: HomeServerConfig) => {
+  await AsyncStorage.setItem(HOME_SERVER_KEY, JSON.stringify(config));
+};

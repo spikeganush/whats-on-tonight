@@ -11,6 +11,7 @@ export default defineSchema({
     tmdbGenreIds: v.optional(v.array(v.number())),
     tmdbRegion: v.optional(v.string()),
     providerIds: v.optional(v.array(v.number())),
+    serverConfig: v.optional(v.string()), // Encrypted Home Server Config
     mediaType: v.string(), // "movie" | "tv"
     limit: v.optional(v.number()), // Max movies to swipe
     mode: v.optional(v.string()), // "first" | "all"

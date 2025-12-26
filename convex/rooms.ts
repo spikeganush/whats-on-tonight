@@ -12,6 +12,7 @@ export const create = mutation({
     providerIds: v.optional(v.array(v.number())),
     limit: v.optional(v.number()),
     mode: v.optional(v.string()),
+    serverConfig: v.optional(v.string()), // Encrypted
   },
   handler: async (ctx, args) => {
     // Generate 4 digit code
@@ -28,6 +29,7 @@ export const create = mutation({
       providerIds: args.providerIds,
       limit: args.limit,
       mode: args.mode,
+      serverConfig: args.serverConfig,
       randomSeed: Math.random(),
     });
 
@@ -40,6 +42,18 @@ export const create = mutation({
     });
 
     return { roomId, code };
+  },
+});
+
+export const updateConfig = mutation({
+  args: {
+    roomId: v.id('rooms'),
+    serverConfig: v.string(), // Encrypted
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.roomId, {
+      serverConfig: args.serverConfig,
+    });
   },
 });
 

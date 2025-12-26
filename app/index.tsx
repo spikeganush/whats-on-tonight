@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from 'convex/react';
 import { Stack, router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
@@ -33,9 +34,20 @@ export default function Home() {
     if (lastRoomId) router.push(`/room/${lastRoomId}`);
   };
 
+  const handleSettings = () => {
+    router.push('/settings');
+  };
+
   return (
     <View className="flex-1 bg-slate-900 items-center justify-center p-6">
       <Stack.Screen options={{ headerShown: false }} />
+
+      <TouchableOpacity
+        className="absolute top-14 right-6 z-10 p-2"
+        onPress={handleSettings}
+      >
+        <Ionicons name="settings-outline" size={28} color="white" />
+      </TouchableOpacity>
 
       <View className="mb-12">
         <Text className="text-4xl font-bold text-white text-center">

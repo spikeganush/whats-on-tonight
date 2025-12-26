@@ -1,6 +1,10 @@
+import {
+  HOME_SERVER_PROVIDER_ID,
+  JELLYFIN_LOGO,
+  PLEX_LOGO,
+} from '@/utils/constants';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation } from 'convex/react';
-import { Image } from 'expo-image';
 import { getLocales } from 'expo-localization';
 import { Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -14,6 +18,7 @@ import {
   View,
 } from 'react-native';
 import CountrySelector from '../../components/CountrySelector';
+import ProviderSelector from '../../components/ProviderSelector';
 import { api } from '../../convex/_generated/api';
 import {
   Country,
@@ -24,7 +29,17 @@ import {
   getWatchProviders,
 } from '../../services/tmdb/config';
 import { WatchProvider } from '../../types/tmdb_providers';
-import { getSessionId, getUserName, saveUserName } from '../../utils/session';
+import { encryptServerConfig } from '../../utils/crypto';
+import {
+  getHomeServerConfig,
+  getSavedCountry,
+  getSavedPlatforms,
+  getSessionId,
+  getUserName,
+  saveCountry,
+  savePlatforms,
+  saveUserName,
+} from '../../utils/session';
 
 export default function RoomConfig() {
   const router = useRouter(); // Use correct hook
@@ -43,6 +58,7 @@ export default function RoomConfig() {
   const [mode, setMode] = useState<'first' | 'all'>('first');
 
   const createRoom = useMutation(api.rooms.create);
+  const updateRoomConfig = useMutation(api.rooms.updateConfig);
   const [userName, setUserName] = useState('');
 
   // Initial Load
@@ -50,9 +66,18 @@ export default function RoomConfig() {
     async function init() {
       try {
         console.log('[RoomConfig] Loading initial data...');
-        const [countriesData, genresData] = await Promise.all([
+        const [
+          countriesData,
+          genresData,
+          savedName,
+          savedCountry,
+          savedPlatforms,
+        ] = await Promise.all([
           getCountries(),
           mediaType === 'movie' ? getMovieGenres() : getTVGenres(),
+          getUserName(),
+          getSavedCountry(),
+          getSavedPlatforms(),
         ]);
 
         const sortedCountries = countriesData.sort((a, b) =>
@@ -60,21 +85,33 @@ export default function RoomConfig() {
         );
         setCountries(sortedCountries);
         setGenres(genresData);
+        if (savedName) setUserName(savedName);
+        if (savedPlatforms) setSelectedProviders(savedPlatforms);
 
-        // Auto-detect country
-        const deviceLocale = getLocales()[0]?.regionCode; // e.g., "US", "FR"
-        if (deviceLocale) {
-          const detected = sortedCountries.find(
-            (c) => c.iso_3166_1 === deviceLocale,
+        if (savedCountry) {
+          const found = sortedCountries.find(
+            (c) => c.iso_3166_1 === savedCountry,
           );
-          if (detected) {
-            console.log('[RoomConfig] Detected country:', detected.iso_3166_1);
-            setSelectedCountry(detected);
-          }
+          if (found) setSelectedCountry(found);
         } else {
-          // Fallback to US if no locale found
-          const us = sortedCountries.find((c) => c.iso_3166_1 === 'US');
-          if (us) setSelectedCountry(us);
+          // Auto-detect country if no saved preference
+          const deviceLocale = getLocales()[0]?.regionCode; // e.g., "US", "FR"
+          if (deviceLocale) {
+            const detected = sortedCountries.find(
+              (c) => c.iso_3166_1 === deviceLocale,
+            );
+            if (detected) {
+              console.log(
+                '[RoomConfig] Detected country:',
+                detected.iso_3166_1,
+              );
+              setSelectedCountry(detected);
+            }
+          } else {
+            // Fallback to US if no locale found
+            const us = sortedCountries.find((c) => c.iso_3166_1 === 'US');
+            if (us) setSelectedCountry(us);
+          }
         }
       } catch (e) {
         console.error('[RoomConfig] Error loading initial data:', e);
@@ -83,12 +120,10 @@ export default function RoomConfig() {
       }
     }
 
-    getUserName().then((n) => {
-      if (n) setUserName(n);
-    });
-
     init();
   }, [mediaType]);
+
+  // ... (imports remain)
 
   // Load Providers when Country/Type changes
   useEffect(() => {
@@ -106,7 +141,22 @@ export default function RoomConfig() {
         );
         // Filter out flatrate/rent/buy if needed, but TMDB returns all.
         // We'll just show top 24 prioritized
-        setProviders(providersData.slice(0, 24));
+        let finalProviders = providersData.slice(0, 24);
+
+        // Inject Home Server if enabled
+        const homeConfig = await getHomeServerConfig();
+        if (homeConfig && homeConfig.enabled) {
+          const homeProvider: WatchProvider = {
+            provider_id: HOME_SERVER_PROVIDER_ID,
+            provider_name: homeConfig.type === 'jellyfin' ? 'Jellyfin' : 'Plex',
+            logo_path:
+              homeConfig.type === 'jellyfin' ? JELLYFIN_LOGO : PLEX_LOGO,
+            display_priority: -1,
+          };
+          finalProviders = [homeProvider, ...finalProviders];
+        }
+
+        setProviders(finalProviders);
       } catch (e) {
         console.error('[RoomConfig] Error loading providers:', e);
       }
@@ -140,7 +190,13 @@ export default function RoomConfig() {
     setLoading(true);
     try {
       const sessionId = await getSessionId();
-      await saveUserName(userName);
+      await Promise.all([
+        saveUserName(userName),
+        selectedCountry
+          ? saveCountry(selectedCountry.iso_3166_1)
+          : Promise.resolve(),
+        savePlatforms(selectedProviders),
+      ]);
       const result = await createRoom({
         sessionId,
         name: userName,
@@ -151,6 +207,19 @@ export default function RoomConfig() {
         limit,
         mode,
       });
+
+      // Encrypt and save Home Server config if enabled
+      const homeConfig = await getHomeServerConfig();
+      if (homeConfig && homeConfig.enabled) {
+        console.log('[RoomConfig] Encrypting Home Server config...');
+        const encryptedConfig = encryptServerConfig(homeConfig, result.code);
+        await updateRoomConfig({
+          roomId: result.roomId,
+          serverConfig: encryptedConfig,
+        });
+        console.log('[RoomConfig] Home Server config saved securely.');
+      }
+
       console.log('[RoomConfig] Room created:', result.roomId);
       router.replace(`/room/${result.roomId}`);
     } catch (e) {
@@ -268,46 +337,11 @@ export default function RoomConfig() {
 
         {/* Watch Providers */}
         {providers.length > 0 && (
-          <View className="mb-6">
-            <Text className="text-white text-xl font-bold mb-3">Services</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingLeft: 4, paddingRight: 20 }}
-            >
-              {providers.map((provider) => {
-                const isSelected = selectedProviders.includes(
-                  provider.provider_id,
-                );
-                return (
-                  <TouchableOpacity
-                    key={provider.provider_id}
-                    onPress={() => toggleProvider(provider.provider_id)}
-                    className={`items-center mr-4 ${isSelected ? 'opacity-100' : 'opacity-60'}`}
-                    activeOpacity={0.7}
-                  >
-                    <View
-                      className={`rounded-xl border-2 ${isSelected ? 'border-indigo-500' : 'border-transparent'}`}
-                    >
-                      <Image
-                        source={{
-                          uri: `https://image.tmdb.org/t/p/w200${provider.logo_path}`,
-                        }}
-                        style={{ width: 56, height: 56, borderRadius: 10 }}
-                        contentFit="cover"
-                      />
-                    </View>
-                    <Text
-                      className="text-gray-400 text-xs mt-1 text-center w-16"
-                      numberOfLines={1}
-                    >
-                      {provider.provider_name}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-          </View>
+          <ProviderSelector
+            providers={providers}
+            selectedProviders={selectedProviders}
+            onToggle={toggleProvider}
+          />
         )}
 
         {/* Genre Selection */}
