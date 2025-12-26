@@ -110,3 +110,8 @@ export const getMovieDetails = async (id: number): Promise<any> => {
     const data = await tmdbFetch(`/movie/${id}`);
     return data;
 };
+
+export const getMovieWatchProviders = async (id: number): Promise<any> => {
+    const data = await tmdbFetch(`/movie/${id}/watch/providers`);
+    return data.results;
+};

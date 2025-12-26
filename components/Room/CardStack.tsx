@@ -8,9 +8,11 @@ interface CardStackProps {
     onSwipeRight: (movie: Movie) => void;
     onSwipeLeft: (movie: Movie) => void;
     onSwipeSuper: (movie: Movie) => void;
+    providerIds?: number[];
+    region?: string;
 }
 
-export default function CardStack({ movies, onSwipeRight, onSwipeLeft, onSwipeSuper }: CardStackProps) {
+export default function CardStack({ movies, onSwipeRight, onSwipeLeft, onSwipeSuper, providerIds, region }: CardStackProps) {
     return (
         <View className="flex-1 items-center justify-center relative w-full">
         {movies.length > 0 ? (
@@ -24,6 +26,8 @@ export default function CardStack({ movies, onSwipeRight, onSwipeLeft, onSwipeSu
                         onSwipeRight={() => onSwipeRight(movie)}
                         onSwipeLeft={() => onSwipeLeft(movie)}
                         onSwipeSuper={() => onSwipeSuper(movie)}
+                        providerIds={providerIds}
+                        region={region}
                     />
                 )
             }).reverse()

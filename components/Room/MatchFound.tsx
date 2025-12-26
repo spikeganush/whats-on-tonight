@@ -8,10 +8,12 @@ import { Id } from '../../convex/_generated/dataModel';
 import { getMovieDetails } from '../../services/tmdb/config';
 import { Movie } from '../../types/tmdb';
 import { clearActiveRoom } from '../../utils/session';
+import ProviderAttribution from '../ProviderAttribution';
 
 export default function MatchFound({ roomId }: { roomId: Id<"rooms"> }) {
     const router = useRouter();
     const match = useQuery(api.rooms.getMatch, { roomId });
+    const room = useQuery(api.rooms.get, { roomId });
     const leaveRoom = useMutation(api.rooms.leave);
     const [movie, setMovie] = useState<Movie | null>(null);
     const [sessionId, setSessionId] = useState<string | null>(null);
@@ -91,6 +93,15 @@ export default function MatchFound({ roomId }: { roomId: Id<"rooms"> }) {
                     contentFit="cover"
                     className="mb-4"
                 />
+                
+                {room && (
+                    <ProviderAttribution 
+                        movieId={movie.id} 
+                        region={room.tmdbRegion || 'US'} 
+                        selectedProviderIds={room.providerIds} 
+                    />
+                )}
+
                 <Text className="text-white text-2xl font-bold text-center mb-2">{movie.title}</Text>
                 <Text className="text-slate-400 text-center mb-4" numberOfLines={3}>{movie.overview}</Text>
                 

@@ -7,9 +7,11 @@ import { api } from '../../convex/_generated/api';
 import { Id } from '../../convex/_generated/dataModel';
 import { getMovieDetails } from '../../services/tmdb/config';
 import { clearActiveRoom } from '../../utils/session';
+import ProviderAttribution from '../ProviderAttribution';
 
 export default function Results({ roomId }: { roomId: Id<"rooms"> }) {
     const matches = useQuery(api.rooms.getMatches, { roomId });
+    const room = useQuery(api.rooms.get, { roomId });
     const [movies, setMovies] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
@@ -61,16 +63,27 @@ export default function Results({ roomId }: { roomId: Id<"rooms"> }) {
             
             <ScrollView contentContainerStyle={{ padding: 16 }}>
                 {movies.map((movie, index) => (
-                    <View key={movie.id} className="bg-slate-800 rounded-xl p-4 mb-4 flex-row gap-4 border border-slate-700">
+                     <View key={movie.id} className="bg-slate-800 rounded-xl p-4 mb-4 flex-row gap-4 border border-slate-700">
                          <Image 
                             source={{ uri: `https://image.tmdb.org/t/p/w200${movie.poster_path}` }}
                             style={{ width: 80, height: 120, borderRadius: 8 }}
                             contentFit="cover"
                         />
-                        <View className="flex-1">
-                            <Text className="text-white text-lg font-bold mb-1">{movie.title}</Text>
-                            <Text className="text-slate-400 text-xs mb-2">{movie.release_date?.split('-')[0]}</Text>
-                             <Text className="text-slate-300 text-sm" numberOfLines={3}>{movie.overview}</Text>
+                        <View className="flex-1 justify-center">
+                            <View>
+                                <Text className="text-white text-lg font-bold mb-1">{movie.title}</Text>
+                                <Text className="text-slate-400 text-xs mb-2">{movie.release_date?.split('-')[0]}</Text>
+                                <Text className="text-slate-300 text-sm" numberOfLines={3}>{movie.overview}</Text>
+                            </View>
+                            
+                            {room && (
+                                <ProviderAttribution 
+                                    movieId={movie.id} 
+                                    region={room.tmdbRegion || 'US'} 
+                                    selectedProviderIds={room.providerIds}
+                                    variant="inline"
+                                />
+                             )}
                         </View>
                     </View>
                 ))}

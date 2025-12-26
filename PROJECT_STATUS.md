@@ -25,6 +25,7 @@ We have successfully completed the **Core Foundation** and **Backend Integration
 4.  **Refinement**:
     -   **Auto-Country Detection** via `expo-localization`.
     -   **Streaming Provider Selection** (Netflix, Prime, etc.) specific to the user's region.
+    -   **Provider Logos**: Visual attribution on cards and results showing where to watch.
 
 ### 🚧  Current State
 The app is **functional**.

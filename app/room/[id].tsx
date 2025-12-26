@@ -188,6 +188,8 @@ export default function RoomSwipeScreen() {
         onSwipeRight={(m) => handleSwipe(m, "right")} 
         onSwipeLeft={(m) => handleSwipe(m, "left")} 
         onSwipeSuper={(m) => handleSwipe(m, "super")}
+        providerIds={room.providerIds}
+        region={room.tmdbRegion}
       />
     </View>
   );

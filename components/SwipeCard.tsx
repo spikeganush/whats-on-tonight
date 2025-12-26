@@ -9,6 +9,7 @@ import Animated, {
   withSpring
 } from 'react-native-reanimated';
 import { Movie } from '../types/tmdb';
+import ProviderAttribution from './ProviderAttribution';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -19,9 +20,11 @@ interface SwipeCardProps {
   onSwipeRight: () => void;
   onSwipeLeft: () => void;
   index: number; 
+  providerIds?: number[];
+  region?: string;
 }
 
-export default function SwipeCard({ movie, onSwipeRight, onSwipeLeft, onSwipeSuper, index }: SwipeCardProps & { onSwipeSuper: () => void }) {
+export default function SwipeCard({ movie, onSwipeRight, onSwipeLeft, onSwipeSuper, index, providerIds, region }: SwipeCardProps & { onSwipeSuper: () => void }) {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   
@@ -111,6 +114,8 @@ export default function SwipeCard({ movie, onSwipeRight, onSwipeLeft, onSwipeSup
           <Text className="text-white text-3xl font-bold">{movie.title}</Text>
           <Text className="text-slate-300 text-lg line-clamp-3">{movie.overview}</Text>
         </View>
+
+        <ProviderAttribution movieId={movie.id} region={region || 'US'} selectedProviderIds={providerIds} />
 
         {index === 0 && (
             <>
