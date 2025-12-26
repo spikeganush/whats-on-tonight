@@ -29,35 +29,43 @@ export const getCountries = async (): Promise<Country[]> => {
 import { WatchProvider } from '../../types/tmdb_providers';
 
 const PRIORITY_PROVIDERS = [
-    "Netflix", 
-    "Disney+", 
-    "Amazon Prime Video", 
-    "Apple TV Plus", 
-    "Apple TV+", 
-    "Hulu", 
-    "Peacock", 
-    "Max", 
-    "HBO Max"
+  'Netflix',
+  'Disney+',
+  'Amazon Prime Video',
+  'Apple TV Plus',
+  'Apple TV+',
+  'Hulu',
+  'Peacock',
+  'Max',
+  'HBO Max',
 ];
 
-export const getWatchProviders = async (region: string = "US", mediaType: 'movie' | 'tv' = 'movie'): Promise<WatchProvider[]> => {
-  const data = await tmdbFetch(`/watch/providers/${mediaType}?watch_region=${region}&sort_by=display_priority.asc`);
+export const getWatchProviders = async (
+  region: string = 'US',
+  mediaType: 'movie' | 'tv' = 'movie'
+): Promise<WatchProvider[]> => {
+  const data = await tmdbFetch(
+    `/watch/providers/${mediaType}?watch_region=${region}&sort_by=display_priority.asc`
+  );
   const allProviders: WatchProvider[] = data.results || [];
-  
+
   const priority: WatchProvider[] = [];
   const others: WatchProvider[] = [];
 
-  allProviders.forEach(p => {
-      if (PRIORITY_PROVIDERS.includes(p.provider_name)) {
-          priority.push(p);
-      } else {
-          others.push(p);
-      }
+  allProviders.forEach((p) => {
+    if (PRIORITY_PROVIDERS.includes(p.provider_name)) {
+      priority.push(p);
+    } else {
+      others.push(p);
+    }
   });
 
   // Sort priority providers based on the index in PRIORITY_PROVIDERS
   priority.sort((a, b) => {
-      return PRIORITY_PROVIDERS.indexOf(a.provider_name) - PRIORITY_PROVIDERS.indexOf(b.provider_name);
+    return (
+      PRIORITY_PROVIDERS.indexOf(a.provider_name) -
+      PRIORITY_PROVIDERS.indexOf(b.provider_name)
+    );
   });
 
   // others are already sorted by display_priority (popularity) from TMDB
@@ -65,7 +73,7 @@ export const getWatchProviders = async (region: string = "US", mediaType: 'movie
 };
 
 export const discoverMovies = async (
-  page: number = 1, 
+  page: number = 1,
   withGenres?: string,
   withRegion?: string,
   withProviders?: string
@@ -74,14 +82,14 @@ export const discoverMovies = async (
     page: page.toString(),
     sort_by: 'popularity.desc',
     include_adult: 'false',
-    include_video: 'true'
+    include_video: 'true',
   };
 
   if (withGenres) params.with_genres = withGenres;
   if (withRegion) params.watch_region = withRegion;
   if (withProviders) {
-      params.with_watch_providers = withProviders;
-      params.watch_region = withRegion || 'US';
+    params.with_watch_providers = withProviders;
+    params.watch_region = withRegion || 'US';
   }
 
   const data = await tmdbFetch('/discover/movie', params);
@@ -89,13 +97,13 @@ export const discoverMovies = async (
 };
 
 export const discoverTV = async (
-  page: number = 1, 
-  withGenres?: string 
+  page: number = 1,
+  withGenres?: string
 ): Promise<any[]> => {
   const params: Record<string, string> = {
     page: page.toString(),
     sort_by: 'popularity.desc',
-    include_adult: 'false'
+    include_adult: 'false',
   };
 
   if (withGenres) {
@@ -107,16 +115,18 @@ export const discoverTV = async (
 };
 
 export const getMovieDetails = async (id: number): Promise<any> => {
-    const data = await tmdbFetch(`/movie/${id}`);
-    return data;
+  const data = await tmdbFetch(`/movie/${id}`);
+  return data;
 };
 
 export const getMovieWatchProviders = async (id: number): Promise<any> => {
-    const data = await tmdbFetch(`/movie/${id}/watch/providers`);
-    return data.results;
+  const data = await tmdbFetch(`/movie/${id}/watch/providers`);
+  return data.results;
 };
 
 export const getMovieWithVideos = async (id: number): Promise<any> => {
-    const data = await tmdbFetch(`/movie/${id}?append_to_response=videos,release_dates`);
-    return data;
+  const data = await tmdbFetch(
+    `/movie/${id}?append_to_response=videos,release_dates,credits`
+  );
+  return data;
 };
