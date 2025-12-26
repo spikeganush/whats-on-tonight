@@ -20,7 +20,7 @@ export default function MatchFound({ roomId }: { roomId: Id<'rooms'> }) {
 
   useEffect(() => {
     import('../../utils/session').then((mod) =>
-      mod.getSessionId().then(setSessionId)
+      mod.getSessionId().then(setSessionId),
     );
   }, []);
 

@@ -9,11 +9,11 @@ import { getActiveRoom } from '../utils/session';
 export default function Home() {
   const handleCreateRoom = () => {
     // Navigate to config
-    router.push("/room/config");
+    router.push('/room/config');
   };
 
   const handleJoinRoom = () => {
-    router.push("/room/join");
+    router.push('/room/join');
   };
 
   const [lastRoomId, setLastRoomId] = useState<string | null>(null);
@@ -21,21 +21,22 @@ export default function Home() {
   useFocusEffect(
     useCallback(() => {
       getActiveRoom().then(setLastRoomId);
-    }, [])
+    }, []),
   );
 
-  const activeRoom = useQuery(api.rooms.get, 
-    lastRoomId ? { roomId: lastRoomId as Id<"rooms"> } : "skip"
+  const activeRoom = useQuery(
+    api.rooms.get,
+    lastRoomId ? { roomId: lastRoomId as Id<'rooms'> } : 'skip',
   );
 
   const handleRejoin = () => {
-      if (lastRoomId) router.push(`/room/${lastRoomId}`);
+    if (lastRoomId) router.push(`/room/${lastRoomId}`);
   };
 
   return (
     <View className="flex-1 bg-slate-900 items-center justify-center p-6">
       <Stack.Screen options={{ headerShown: false }} />
-      
+
       <View className="mb-12">
         <Text className="text-4xl font-bold text-white text-center">
           What's on tonight
@@ -46,7 +47,7 @@ export default function Home() {
       </View>
 
       <View className="w-full max-w-sm gap-4">
-        <TouchableOpacity 
+        <TouchableOpacity
           className="bg-indigo-600 p-4 rounded-xl items-center active:bg-indigo-700"
           onPress={handleCreateRoom}
         >
@@ -54,15 +55,17 @@ export default function Home() {
         </TouchableOpacity>
 
         {lastRoomId && activeRoom && (
-            <TouchableOpacity 
-                className="bg-green-600 p-4 rounded-xl items-center active:bg-green-700"
-                onPress={handleRejoin}
-            >
-            <Text className="text-white font-semibold text-xl">Resume Room {activeRoom.code}</Text>
-            </TouchableOpacity>
+          <TouchableOpacity
+            className="bg-green-600 p-4 rounded-xl items-center active:bg-green-700"
+            onPress={handleRejoin}
+          >
+            <Text className="text-white font-semibold text-xl">
+              Resume Room {activeRoom.code}
+            </Text>
+          </TouchableOpacity>
         )}
 
-        <TouchableOpacity 
+        <TouchableOpacity
           className="bg-slate-700 p-4 rounded-xl items-center active:bg-slate-800"
           onPress={handleJoinRoom}
         >

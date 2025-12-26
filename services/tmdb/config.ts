@@ -42,10 +42,10 @@ const PRIORITY_PROVIDERS = [
 
 export const getWatchProviders = async (
   region: string = 'US',
-  mediaType: 'movie' | 'tv' = 'movie'
+  mediaType: 'movie' | 'tv' = 'movie',
 ): Promise<WatchProvider[]> => {
   const data = await tmdbFetch(
-    `/watch/providers/${mediaType}?watch_region=${region}&sort_by=display_priority.asc`
+    `/watch/providers/${mediaType}?watch_region=${region}&sort_by=display_priority.asc`,
   );
   const allProviders: WatchProvider[] = data.results || [];
 
@@ -76,7 +76,7 @@ export const discoverMovies = async (
   page: number = 1,
   withGenres?: string,
   withRegion?: string,
-  withProviders?: string
+  withProviders?: string,
 ): Promise<any[]> => {
   const params: Record<string, string> = {
     page: page.toString(),
@@ -98,7 +98,7 @@ export const discoverMovies = async (
 
 export const discoverTV = async (
   page: number = 1,
-  withGenres?: string
+  withGenres?: string,
 ): Promise<any[]> => {
   const params: Record<string, string> = {
     page: page.toString(),
@@ -126,7 +126,7 @@ export const getMovieWatchProviders = async (id: number): Promise<any> => {
 
 export const getMovieWithVideos = async (id: number): Promise<any> => {
   const data = await tmdbFetch(
-    `/movie/${id}?append_to_response=videos,release_dates,credits`
+    `/movie/${id}?append_to_response=videos,release_dates,credits`,
   );
   return data;
 };

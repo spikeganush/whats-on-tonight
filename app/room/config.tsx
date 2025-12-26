@@ -4,10 +4,25 @@ import { Image } from 'expo-image';
 import { getLocales } from 'expo-localization';
 import { Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import CountrySelector from '../../components/CountrySelector';
 import { api } from '../../convex/_generated/api';
-import { Country, Genre, getCountries, getMovieGenres, getTVGenres, getWatchProviders } from '../../services/tmdb/config';
+import {
+  Country,
+  Genre,
+  getCountries,
+  getMovieGenres,
+  getTVGenres,
+  getWatchProviders,
+} from '../../services/tmdb/config';
 import { WatchProvider } from '../../types/tmdb_providers';
 import { getSessionId, getUserName, saveUserName } from '../../utils/session';
 
@@ -17,7 +32,7 @@ export default function RoomConfig() {
   const [countries, setCountries] = useState<Country[]>([]);
   const [genres, setGenres] = useState<Genre[]>([]);
   const [providers, setProviders] = useState<WatchProvider[]>([]);
-  
+
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [showCountrySelector, setShowCountrySelector] = useState(false);
 
@@ -33,40 +48,43 @@ export default function RoomConfig() {
   // Initial Load
   useEffect(() => {
     async function init() {
-        try {
-            console.log('[RoomConfig] Loading initial data...');
-            const [countriesData, genresData] = await Promise.all([
-                getCountries(),
-                mediaType === 'movie' ? getMovieGenres() : getTVGenres()
-            ]);
-            
-            const sortedCountries = countriesData.sort((a, b) => a.english_name.localeCompare(b.english_name));
-            setCountries(sortedCountries);
-            setGenres(genresData);
+      try {
+        console.log('[RoomConfig] Loading initial data...');
+        const [countriesData, genresData] = await Promise.all([
+          getCountries(),
+          mediaType === 'movie' ? getMovieGenres() : getTVGenres(),
+        ]);
 
-            // Auto-detect country
-            const deviceLocale = getLocales()[0]?.regionCode; // e.g., "US", "FR"
-            if (deviceLocale) {
-                const detected = sortedCountries.find(c => c.iso_3166_1 === deviceLocale);
-                if (detected) {
-                    console.log('[RoomConfig] Detected country:', detected.iso_3166_1);
-                    setSelectedCountry(detected);
-                }
-            } else {
-                 // Fallback to US if no locale found
-                 const us = sortedCountries.find(c => c.iso_3166_1 === 'US');
-                 if (us) setSelectedCountry(us);
-            }
+        const sortedCountries = countriesData.sort((a, b) =>
+          a.english_name.localeCompare(b.english_name),
+        );
+        setCountries(sortedCountries);
+        setGenres(genresData);
 
-        } catch (e) {
-            console.error('[RoomConfig] Error loading initial data:', e);
-        } finally {
-            setLoading(false);
+        // Auto-detect country
+        const deviceLocale = getLocales()[0]?.regionCode; // e.g., "US", "FR"
+        if (deviceLocale) {
+          const detected = sortedCountries.find(
+            (c) => c.iso_3166_1 === deviceLocale,
+          );
+          if (detected) {
+            console.log('[RoomConfig] Detected country:', detected.iso_3166_1);
+            setSelectedCountry(detected);
+          }
+        } else {
+          // Fallback to US if no locale found
+          const us = sortedCountries.find((c) => c.iso_3166_1 === 'US');
+          if (us) setSelectedCountry(us);
         }
+      } catch (e) {
+        console.error('[RoomConfig] Error loading initial data:', e);
+      } finally {
+        setLoading(false);
+      }
     }
-    
-    getUserName().then(n => {
-        if (n) setUserName(n);
+
+    getUserName().then((n) => {
+      if (n) setUserName(n);
     });
 
     init();
@@ -74,25 +92,31 @@ export default function RoomConfig() {
 
   // Load Providers when Country/Type changes
   useEffect(() => {
-      async function loadProviders() {
-          if (!selectedCountry) return;
-          try {
-              console.log('[RoomConfig] Loading providers for:', selectedCountry.iso_3166_1, mediaType);
-              const providersData = await getWatchProviders(selectedCountry.iso_3166_1, mediaType);
-              // Filter out flatrate/rent/buy if needed, but TMDB returns all. 
-              // We'll just show top 24 prioritized
-              setProviders(providersData.slice(0, 24));
-          } catch (e) {
-              console.error('[RoomConfig] Error loading providers:', e);
-          }
+    async function loadProviders() {
+      if (!selectedCountry) return;
+      try {
+        console.log(
+          '[RoomConfig] Loading providers for:',
+          selectedCountry.iso_3166_1,
+          mediaType,
+        );
+        const providersData = await getWatchProviders(
+          selectedCountry.iso_3166_1,
+          mediaType,
+        );
+        // Filter out flatrate/rent/buy if needed, but TMDB returns all.
+        // We'll just show top 24 prioritized
+        setProviders(providersData.slice(0, 24));
+      } catch (e) {
+        console.error('[RoomConfig] Error loading providers:', e);
       }
-      loadProviders();
+    }
+    loadProviders();
   }, [selectedCountry, mediaType]);
-
 
   const toggleGenre = (id: number) => {
     if (selectedGenres.includes(id)) {
-      setSelectedGenres(selectedGenres.filter(g => g !== id));
+      setSelectedGenres(selectedGenres.filter((g) => g !== id));
     } else {
       setSelectedGenres([...selectedGenres, id]);
     }
@@ -101,39 +125,39 @@ export default function RoomConfig() {
   const toggleProvider = (id: number) => {
     console.log('[RoomConfig] Toggling provider:', id);
     if (selectedProviders.includes(id)) {
-        setSelectedProviders(selectedProviders.filter(p => p !== id));
+      setSelectedProviders(selectedProviders.filter((p) => p !== id));
     } else {
-        setSelectedProviders([...selectedProviders, id]);
+      setSelectedProviders([...selectedProviders, id]);
     }
   };
 
   const handleStartRoom = async () => {
     console.log('[RoomConfig] Starting room...');
     if (!userName.trim()) {
-        Alert.alert("Name Required", "Please enter your name");
-        return;
+      Alert.alert('Name Required', 'Please enter your name');
+      return;
     }
     setLoading(true);
     try {
-        const sessionId = await getSessionId();
-        await saveUserName(userName);
-        const result = await createRoom({
-            sessionId,
-            name: userName,
-            mediaType,
-            tmdbGenreIds: selectedGenres,
-            tmdbRegion: selectedCountry?.iso_3166_1,
-            providerIds: selectedProviders,
-            limit,
-            mode
-        });
-        console.log('[RoomConfig] Room created:', result.roomId);
-        router.replace(`/room/${result.roomId}`);
+      const sessionId = await getSessionId();
+      await saveUserName(userName);
+      const result = await createRoom({
+        sessionId,
+        name: userName,
+        mediaType,
+        tmdbGenreIds: selectedGenres,
+        tmdbRegion: selectedCountry?.iso_3166_1,
+        providerIds: selectedProviders,
+        limit,
+        mode,
+      });
+      console.log('[RoomConfig] Room created:', result.roomId);
+      router.replace(`/room/${result.roomId}`);
     } catch (e) {
-        console.error('[RoomConfig] Error creating room:', e);
-        Alert.alert("Error", "Failed to create room");
+      console.error('[RoomConfig] Error creating room:', e);
+      Alert.alert('Error', 'Failed to create room');
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -147,70 +171,80 @@ export default function RoomConfig() {
 
   return (
     <View className="flex-1 bg-slate-900">
-      <Stack.Screen options={{ 
-        title: 'Configure Room', 
-        headerStyle: { backgroundColor: '#0f172a' },
-        headerTintColor: '#fff',
-        headerShadowVisible: false,
-      }} />
-      
-      <ScrollView className="p-4" contentContainerStyle={{ paddingBottom: 100 }}>
-        
+      <Stack.Screen
+        options={{
+          title: 'Configure Room',
+          headerStyle: { backgroundColor: '#0f172a' },
+          headerTintColor: '#fff',
+          headerShadowVisible: false,
+        }}
+      />
+
+      <ScrollView
+        className="p-4"
+        contentContainerStyle={{ paddingBottom: 100 }}
+      >
         {/* User Name */}
         <Text className="text-white text-xl font-bold mb-3">Your Name</Text>
-        <TextInput 
-            className="bg-slate-800 text-white p-4 rounded-xl mb-6 text-lg"
-            placeholder="Enter your name"
-            placeholderTextColor="#64748b"
-            value={userName}
-            onChangeText={setUserName}
+        <TextInput
+          className="bg-slate-800 text-white p-4 rounded-xl mb-6 text-lg"
+          placeholder="Enter your name"
+          placeholderTextColor="#64748b"
+          value={userName}
+          onChangeText={setUserName}
         />
 
         {/* Game Mode & Limit */}
         <Text className="text-white text-xl font-bold mb-3">Game Settings</Text>
         <View className="bg-slate-800 rounded-xl p-4 mb-6">
-            <Text className="text-slate-400 mb-3">Deck Size: {limit} movies</Text>
-            <View className="flex-row gap-2 mb-6">
-                {[10, 20, 50].map(val => (
-                     <TouchableOpacity 
-                        key={val}
-                        onPress={() => setLimit(val)}
-                        className={`flex-1 p-2 rounded-lg items-center border ${limit === val ? 'bg-indigo-600 border-indigo-500' : 'bg-slate-700 border-slate-600'}`}
-                    >
-                        <Text className="text-white font-bold">{val}</Text>
-                    </TouchableOpacity>
-                ))}
-            </View>
+          <Text className="text-slate-400 mb-3">Deck Size: {limit} movies</Text>
+          <View className="flex-row gap-2 mb-6">
+            {[10, 20, 50].map((val) => (
+              <TouchableOpacity
+                key={val}
+                onPress={() => setLimit(val)}
+                className={`flex-1 p-2 rounded-lg items-center border ${limit === val ? 'bg-indigo-600 border-indigo-500' : 'bg-slate-700 border-slate-600'}`}
+              >
+                <Text className="text-white font-bold">{val}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
-            <Text className="text-slate-400 mb-3">Game Mode</Text>
-            <View className="flex-row gap-2">
-                 <TouchableOpacity 
-                    onPress={() => setMode('first')}
-                    className={`flex-1 p-3 rounded-lg items-center border ${mode === 'first' ? 'bg-indigo-600 border-indigo-500' : 'bg-slate-700 border-slate-600'}`}
-                >
-                    <Text className="text-white font-bold mb-1">First Match</Text>
-                    <Text className="text-slate-400 text-xs text-center">Stop at first match</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                    onPress={() => setMode('all')}
-                    className={`flex-1 p-3 rounded-lg items-center border ${mode === 'all' ? 'bg-indigo-600 border-indigo-500' : 'bg-slate-700 border-slate-600'}`}
-                >
-                     <Text className="text-white font-bold mb-1">Full Deck</Text>
-                     <Text className="text-slate-400 text-xs text-center">Swipe all, see results</Text>
-                </TouchableOpacity>
-            </View>
+          <Text className="text-slate-400 mb-3">Game Mode</Text>
+          <View className="flex-row gap-2">
+            <TouchableOpacity
+              onPress={() => setMode('first')}
+              className={`flex-1 p-3 rounded-lg items-center border ${mode === 'first' ? 'bg-indigo-600 border-indigo-500' : 'bg-slate-700 border-slate-600'}`}
+            >
+              <Text className="text-white font-bold mb-1">First Match</Text>
+              <Text className="text-slate-400 text-xs text-center">
+                Stop at first match
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setMode('all')}
+              className={`flex-1 p-3 rounded-lg items-center border ${mode === 'all' ? 'bg-indigo-600 border-indigo-500' : 'bg-slate-700 border-slate-600'}`}
+            >
+              <Text className="text-white font-bold mb-1">Full Deck</Text>
+              <Text className="text-slate-400 text-xs text-center">
+                Swipe all, see results
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Media Type Selection */}
-        <Text className="text-white text-xl font-bold mb-3">What are we watching?</Text>
+        <Text className="text-white text-xl font-bold mb-3">
+          What are we watching?
+        </Text>
         <View className="flex-row gap-4 mb-6">
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => setMediaType('movie')}
             className={`flex-1 p-4 rounded-xl items-center border-2 ${mediaType === 'movie' ? 'bg-indigo-600 border-indigo-500' : 'bg-slate-800 border-slate-700'}`}
           >
             <Text className="text-white font-semibold">Movies</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => setMediaType('tv')}
             className={`flex-1 p-4 rounded-xl items-center border-2 ${mediaType === 'tv' ? 'bg-indigo-600 border-indigo-500' : 'bg-slate-800 border-slate-700'}`}
           >
@@ -220,56 +254,67 @@ export default function RoomConfig() {
 
         {/* Region Selection */}
         <Text className="text-white text-xl font-bold mb-3">Region</Text>
-        <TouchableOpacity 
-            className="bg-slate-800 rounded-xl p-4 mb-6 flex-row justify-between items-center"
-            onPress={() => setShowCountrySelector(true)}
+        <TouchableOpacity
+          className="bg-slate-800 rounded-xl p-4 mb-6 flex-row justify-between items-center"
+          onPress={() => setShowCountrySelector(true)}
         >
-            <Text className="text-white text-lg">
-                {selectedCountry ? `${selectedCountry.english_name} (${selectedCountry.iso_3166_1})` : "Select Region"}
-            </Text>
-            <Ionicons name="chevron-down" size={24} color="#94a3b8" />
+          <Text className="text-white text-lg">
+            {selectedCountry
+              ? `${selectedCountry.english_name} (${selectedCountry.iso_3166_1})`
+              : 'Select Region'}
+          </Text>
+          <Ionicons name="chevron-down" size={24} color="#94a3b8" />
         </TouchableOpacity>
 
         {/* Watch Providers */}
         {providers.length > 0 && (
-            <View className="mb-6">
-                <Text className="text-white text-xl font-bold mb-3">Services</Text>
-                <ScrollView 
-                    horizontal 
-                    showsHorizontalScrollIndicator={false} 
-                    contentContainerStyle={{ paddingLeft: 4, paddingRight: 20 }}
-                >
-                    {providers.map(provider => {
-                        const isSelected = selectedProviders.includes(provider.provider_id);
-                        return (
-                            <TouchableOpacity 
-                                key={provider.provider_id}
-                                onPress={() => toggleProvider(provider.provider_id)}
-                                className={`items-center mr-4 ${isSelected ? 'opacity-100' : 'opacity-60'}`}
-                                activeOpacity={0.7}
-                            >
-                                <View className={`rounded-xl border-2 ${isSelected ? 'border-indigo-500' : 'border-transparent'}`}>
-                                    <Image 
-                                        source={{ uri: `https://image.tmdb.org/t/p/w200${provider.logo_path}` }}
-                                        style={{ width: 56, height: 56, borderRadius: 10 }}
-                                        contentFit="cover"
-                                    />
-                                </View>
-                                <Text className="text-gray-400 text-xs mt-1 text-center w-16" numberOfLines={1}>
-                                    {provider.provider_name}
-                                </Text>
-                            </TouchableOpacity>
-                        );
-                    })}
-                </ScrollView>
-            </View>
+          <View className="mb-6">
+            <Text className="text-white text-xl font-bold mb-3">Services</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingLeft: 4, paddingRight: 20 }}
+            >
+              {providers.map((provider) => {
+                const isSelected = selectedProviders.includes(
+                  provider.provider_id,
+                );
+                return (
+                  <TouchableOpacity
+                    key={provider.provider_id}
+                    onPress={() => toggleProvider(provider.provider_id)}
+                    className={`items-center mr-4 ${isSelected ? 'opacity-100' : 'opacity-60'}`}
+                    activeOpacity={0.7}
+                  >
+                    <View
+                      className={`rounded-xl border-2 ${isSelected ? 'border-indigo-500' : 'border-transparent'}`}
+                    >
+                      <Image
+                        source={{
+                          uri: `https://image.tmdb.org/t/p/w200${provider.logo_path}`,
+                        }}
+                        style={{ width: 56, height: 56, borderRadius: 10 }}
+                        contentFit="cover"
+                      />
+                    </View>
+                    <Text
+                      className="text-gray-400 text-xs mt-1 text-center w-16"
+                      numberOfLines={1}
+                    >
+                      {provider.provider_name}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
         )}
 
         {/* Genre Selection */}
         <Text className="text-white text-xl font-bold mb-3">Genres</Text>
         <View className="flex-row flex-wrap gap-2">
-          {genres.map(genre => (
-            <TouchableOpacity 
+          {genres.map((genre) => (
+            <TouchableOpacity
               key={genre.id}
               onPress={() => toggleGenre(genre.id)}
               className={`px-4 py-2 rounded-full border ${selectedGenres.includes(genre.id) ? 'bg-indigo-600 border-indigo-500' : 'bg-slate-800 border-slate-700'}`}
@@ -282,7 +327,7 @@ export default function RoomConfig() {
 
       {/* Floating Action Button */}
       <View className="absolute bottom-6 left-4 right-4">
-        <TouchableOpacity 
+        <TouchableOpacity
           className="bg-green-600 p-4 rounded-xl items-center shadow-lg"
           onPress={handleStartRoom}
         >
@@ -290,7 +335,7 @@ export default function RoomConfig() {
         </TouchableOpacity>
       </View>
 
-      <CountrySelector 
+      <CountrySelector
         visible={showCountrySelector}
         onClose={() => setShowCountrySelector(false)}
         onSelect={setSelectedCountry}

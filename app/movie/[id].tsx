@@ -54,7 +54,7 @@ export default function MovieDetailScreen() {
 
   const trailer = movie.videos?.results?.find(
     (v: any) =>
-      v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser')
+      v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser'),
   );
 
   const handleOpenTrailer = () => {

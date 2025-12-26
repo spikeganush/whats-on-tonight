@@ -26,7 +26,7 @@ export default function Results({ roomId }: { roomId: Id<'rooms'> }) {
     async function fetchDetails() {
       if (!matches) return;
       const details = await Promise.all(
-        matches.map((m) => getMovieDetails(m.movieId))
+        matches.map((m) => getMovieDetails(m.movieId)),
       );
       setMovies(details);
       setLoading(false);
@@ -41,7 +41,7 @@ export default function Results({ roomId }: { roomId: Id<'rooms'> }) {
 
   useEffect(() => {
     import('../../utils/session').then((mod) =>
-      mod.getSessionId().then(setSessionId)
+      mod.getSessionId().then(setSessionId),
     );
   }, []);
 
