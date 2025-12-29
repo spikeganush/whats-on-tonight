@@ -1,6 +1,6 @@
 import { useMutation } from 'convex/react';
 import { Stack, router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { api } from '../../convex/_generated/api';
 import { getSessionId, getUserName, saveUserName } from '../../utils/session';
@@ -9,6 +9,7 @@ export default function JoinRoom() {
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
+  const codeInputRef = useRef<TextInput>(null);
 
   useEffect(() => {
     getUserName().then(setName);
@@ -52,6 +53,7 @@ export default function JoinRoom() {
       <Text className="text-white text-3xl font-bold mb-8">Enter Code</Text>
 
       <TextInput
+        ref={codeInputRef}
         className="w-full bg-slate-800 text-white text-center text-3xl p-4 rounded-xl mb-4 font-bold tracking-widest"
         placeholder="0000"
         placeholderTextColor="#64748b"
@@ -59,6 +61,8 @@ export default function JoinRoom() {
         maxLength={4}
         value={code}
         onChangeText={setCode}
+        returnKeyType="done"
+        onSubmitEditing={handleJoin}
       />
 
       <TextInput
@@ -67,6 +71,8 @@ export default function JoinRoom() {
         placeholderTextColor="#64748b"
         value={name}
         onChangeText={setName}
+        returnKeyType="next"
+        onSubmitEditing={() => codeInputRef.current?.focus()}
       />
 
       <TouchableOpacity
