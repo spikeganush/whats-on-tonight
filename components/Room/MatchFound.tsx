@@ -123,6 +123,7 @@ export default function MatchFound({ roomId }: { roomId: Id<'rooms'> }) {
             movieId={movie.id}
             region={room.tmdbRegion || 'US'}
             selectedProviderIds={room.providerIds}
+            movie={movie}
           />
         )}
 

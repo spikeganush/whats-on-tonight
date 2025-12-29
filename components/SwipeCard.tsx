@@ -167,6 +167,7 @@ export default function SwipeCard({
           movieId={movie.id}
           region={region || 'US'}
           selectedProviderIds={providerIds}
+          movie={movie}
         />
 
         {index === 0 && (

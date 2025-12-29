@@ -130,6 +130,7 @@ export default function Results({ roomId }: { roomId: Id<'rooms'> }) {
                   region={room.tmdbRegion || 'US'}
                   selectedProviderIds={room.providerIds}
                   variant="inline"
+                  movie={movie}
                 />
               )}
             </View>

@@ -2,6 +2,8 @@ import { Image } from 'expo-image';
 import React, { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 import { getMovieWatchProviders } from '../services/tmdb/config';
+import { Movie } from '../types/tmdb';
+import { JELLYFIN_LOGO } from '../utils/constants';
 
 interface ProviderAttributionProps {
   movieId: number;
@@ -9,6 +11,7 @@ interface ProviderAttributionProps {
   selectedProviderIds?: number[];
   variant?: 'overlay' | 'inline';
   showAll?: boolean;
+  movie?: Movie;
 }
 
 export default function ProviderAttribution({
@@ -17,11 +20,21 @@ export default function ProviderAttribution({
   selectedProviderIds,
   variant = 'overlay',
   showAll = false,
+  movie,
 }: ProviderAttributionProps) {
   const [logos, setLogos] = useState<string[]>([]);
+  const [isFromJellyfin, setIsFromJellyfin] = useState(false);
 
   useEffect(() => {
     let mounted = true;
+
+    // Check if movie is from Jellyfin (poster_path is absolute URL)
+    if (movie?.poster_path) {
+      const isAbsoluteUrl =
+        movie.poster_path.startsWith('http://') ||
+        movie.poster_path.startsWith('https://');
+      setIsFromJellyfin(isAbsoluteUrl);
+    }
 
     async function fetch() {
       try {
@@ -57,9 +70,9 @@ export default function ProviderAttribution({
     return () => {
       mounted = false;
     };
-  }, [movieId, region, selectedProviderIds, showAll]);
+  }, [movieId, region, selectedProviderIds, showAll, movie]);
 
-  if (logos.length === 0) return null;
+  if (logos.length === 0 && !isFromJellyfin) return null;
 
   const containerData =
     variant === 'overlay'
@@ -73,6 +86,13 @@ export default function ProviderAttribution({
     <View {...containerData}>
       {variant === 'inline' && (
         <Text className="text-slate-400 text-xs">Available on:</Text>
+      )}
+      {isFromJellyfin && (
+        <Image
+          source={JELLYFIN_LOGO}
+          style={{ width: 30, height: 30, borderRadius: 8 }}
+          contentFit="contain"
+        />
       )}
       {logos.map((logo, i) => (
         <Image
