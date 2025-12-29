@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { WatchProvider } from '../types/tmdb_providers';
+import { getProviderLogoSource } from '../utils/providerLogo';
 
 interface ProviderSelectorProps {
   providers: WatchProvider[];
@@ -36,15 +37,7 @@ export default function ProviderSelector({
                 className={`rounded-xl border-2 ${isSelected ? 'border-indigo-500' : 'border-transparent'}`}
               >
                 <Image
-                  source={
-                    typeof provider.logo_path === 'number'
-                      ? provider.logo_path
-                      : {
-                          uri: provider.logo_path?.startsWith('http')
-                            ? provider.logo_path
-                            : `https://image.tmdb.org/t/p/w200${provider.logo_path}`,
-                        }
-                  }
+                  source={getProviderLogoSource(provider.logo_path)}
                   style={{ width: 56, height: 56, borderRadius: 10 }}
                   contentFit="cover"
                 />

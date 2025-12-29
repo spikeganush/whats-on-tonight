@@ -4,6 +4,7 @@ import { Text, View } from 'react-native';
 import { getMovieWatchProviders } from '../services/tmdb/config';
 import { Movie } from '../types/tmdb';
 import { JELLYFIN_LOGO } from '../utils/constants';
+import { getProviderLogoSource } from '../utils/providerLogo';
 
 interface ProviderAttributionProps {
   movieId: number;
@@ -89,15 +90,15 @@ export default function ProviderAttribution({
       )}
       {isFromJellyfin && (
         <Image
-          source={JELLYFIN_LOGO}
+          source={getProviderLogoSource(JELLYFIN_LOGO)}
           style={{ width: 30, height: 30, borderRadius: 8 }}
-          contentFit="contain"
+          contentFit="cover"
         />
       )}
       {logos.map((logo, i) => (
         <Image
           key={i}
-          source={{ uri: `https://image.tmdb.org/t/p/original${logo}` }}
+          source={getProviderLogoSource(logo)}
           style={{ width: 30, height: 30, borderRadius: 8 }}
           contentFit="cover"
         />
