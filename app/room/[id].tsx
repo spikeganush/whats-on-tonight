@@ -224,6 +224,7 @@ export default function RoomSwipeScreen() {
         onSwipeSuper={(m) => handleSwipe(m, 'super')}
         providerIds={room.providerIds}
         region={room.tmdbRegion}
+        isJellyfinRoom={!!room.serverConfig}
       />
     </View>
   );

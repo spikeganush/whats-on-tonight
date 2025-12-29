@@ -113,6 +113,7 @@ export default function MovieDetailScreen() {
               }
               variant="inline"
               showAll={true}
+              isJellyfinRoom={params.isJellyfinRoom === 'true'}
             />
           </View>
 

@@ -13,6 +13,7 @@ interface ProviderAttributionProps {
   variant?: 'overlay' | 'inline';
   showAll?: boolean;
   movie?: Movie;
+  isJellyfinRoom?: boolean;
 }
 
 export default function ProviderAttribution({
@@ -22,6 +23,7 @@ export default function ProviderAttribution({
   variant = 'overlay',
   showAll = false,
   movie,
+  isJellyfinRoom,
 }: ProviderAttributionProps) {
   const [logos, setLogos] = useState<string[]>([]);
   const [isFromJellyfin, setIsFromJellyfin] = useState(false);
@@ -29,8 +31,10 @@ export default function ProviderAttribution({
   useEffect(() => {
     let mounted = true;
 
-    // Check if movie is from Jellyfin (poster_path is absolute URL)
-    if (movie?.poster_path) {
+    // Check if movie is from Jellyfin (poster_path is absolute URL OR explicit flag)
+    if (isJellyfinRoom) {
+      setIsFromJellyfin(true);
+    } else if (movie?.poster_path) {
       const isAbsoluteUrl =
         movie.poster_path.startsWith('http://') ||
         movie.poster_path.startsWith('https://');
@@ -71,7 +75,7 @@ export default function ProviderAttribution({
     return () => {
       mounted = false;
     };
-  }, [movieId, region, selectedProviderIds, showAll, movie]);
+  }, [movieId, region, selectedProviderIds, showAll, movie, isJellyfinRoom]);
 
   if (logos.length === 0 && !isFromJellyfin) return null;
 

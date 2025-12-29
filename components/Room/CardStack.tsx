@@ -10,6 +10,7 @@ interface CardStackProps {
   onSwipeSuper: (movie: Movie) => void;
   providerIds?: number[];
   region?: string;
+  isJellyfinRoom?: boolean;
 }
 
 export default function CardStack({
@@ -19,6 +20,7 @@ export default function CardStack({
   onSwipeSuper,
   providerIds,
   region,
+  isJellyfinRoom,
 }: CardStackProps) {
   return (
     <View className="flex-1 items-center justify-center relative w-full">
@@ -36,6 +38,7 @@ export default function CardStack({
                 onSwipeSuper={() => onSwipeSuper(movie)}
                 providerIds={providerIds}
                 region={region}
+                isJellyfinRoom={isJellyfinRoom}
               />
             );
           })

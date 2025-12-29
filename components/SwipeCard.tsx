@@ -33,6 +33,7 @@ interface SwipeCardProps {
   index: number;
   providerIds?: number[];
   region?: string;
+  isJellyfinRoom?: boolean;
 }
 
 export default function SwipeCard({
@@ -43,6 +44,7 @@ export default function SwipeCard({
   index,
   providerIds,
   region,
+  isJellyfinRoom,
 }: SwipeCardProps & { onSwipeSuper: () => void }) {
   const router = useRouter();
   const translateX = useSharedValue(0);
@@ -58,6 +60,7 @@ export default function SwipeCard({
         id: movie.id,
         region: region,
         providerIds: providerIds ? JSON.stringify(providerIds) : undefined,
+        isJellyfinRoom: isJellyfinRoom ? 'true' : undefined,
       },
     });
   };

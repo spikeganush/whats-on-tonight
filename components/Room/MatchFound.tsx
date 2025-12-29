@@ -104,6 +104,7 @@ export default function MatchFound({ roomId }: { roomId: Id<'rooms'> }) {
               id: movie.id,
               region: room?.tmdbRegion,
               providerIds: JSON.stringify(room?.providerIds),
+              isJellyfinRoom: room?.serverConfig ? 'true' : undefined,
             },
           })
         }
