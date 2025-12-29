@@ -171,6 +171,7 @@ export default function SwipeCard({
           region={region || 'US'}
           selectedProviderIds={providerIds}
           movie={movie}
+          isJellyfinRoom={isJellyfinRoom}
         />
 
         {index === 0 && (

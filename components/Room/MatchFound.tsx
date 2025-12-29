@@ -125,6 +125,7 @@ export default function MatchFound({ roomId }: { roomId: Id<'rooms'> }) {
             region={room.tmdbRegion || 'US'}
             selectedProviderIds={room.providerIds}
             movie={movie}
+            isJellyfinRoom={!!room.serverConfig}
           />
         )}
 

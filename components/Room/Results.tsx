@@ -132,6 +132,7 @@ export default function Results({ roomId }: { roomId: Id<'rooms'> }) {
                   selectedProviderIds={room.providerIds}
                   variant="inline"
                   movie={movie}
+                  isJellyfinRoom={!!room.serverConfig}
                 />
               )}
             </View>
