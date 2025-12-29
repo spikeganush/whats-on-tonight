@@ -30,15 +30,18 @@ export const adaptJellyfinItemToMovie = (
   }
 
   // 2. Resolve Images
+  // Handle both 'url' and 'baseUrl' property names
+  const baseUrl = (config as any).url || config.baseUrl;
+
   let poster_path = '';
   if (item.ImageTags?.Primary) {
-    poster_path = `${config.baseUrl}/Items/${item.Id}/Images/Primary?tag=${item.ImageTags.Primary}`;
+    poster_path = `${baseUrl}/Items/${item.Id}/Images/Primary?tag=${item.ImageTags.Primary}&api_key=${config.apiKey}`;
   }
 
   let backdrop_path = '';
   if (item.BackdropImageTags && item.BackdropImageTags.length > 0) {
     const tag = item.BackdropImageTags[0];
-    backdrop_path = `${config.baseUrl}/Items/${item.Id}/Images/Backdrop/0?tag=${tag}`;
+    backdrop_path = `${baseUrl}/Items/${item.Id}/Images/Backdrop/0?tag=${tag}&api_key=${config.apiKey}`;
   }
 
   // 3. Resolve Date
